@@ -5,7 +5,8 @@ const pool = new Pool({
   password: "keyboardcat",
   host: "localhost",
   port: 5432,
-  database: "Fyle2"
+  database: "Fyle2",
+  client_encoding: 'win1252', 
 });
 
 module.exports = pool;
