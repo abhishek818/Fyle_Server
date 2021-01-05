@@ -7,6 +7,7 @@ const pool = new Pool({
   port: 5432,
   database: "Fyle2",
   client_encoding: 'win1252', 
+  idleTimeoutMillis: 1000,
 });
 
 module.exports = pool;
