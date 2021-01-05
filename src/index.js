@@ -1,9 +1,18 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
-
+const pool = require("./db");
 app.use(cors());
 app.use(express.json());
+
+app.get("/todos", async (req, res) => {
+  try {
+    const allTodos = await pool.query("SELECT * FROM banks");
+    res.json(allTodos.rows);
+  } catch (err) {
+    console.error(err.message);
+  }
+});
 
 app.listen(5000, () => 
 {
