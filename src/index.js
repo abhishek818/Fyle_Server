@@ -17,95 +17,88 @@ app.get("/api/banks", async (req, res) => {
   }
 });
 
-app.get("/api/branches/autocomplete", async (req, res) => {
+app.get("/api/branches/", async (req, res) => {
   
   try 
   {
-    var branch = req.query.q;
-    var limit = req.query.limit;
-    var offset = req.query.offset;
-    
+    var search = req.query.q ? req.query.q : "RTGS";
+    var limit = req.query.limit ? req.query.limit : 4;
+    var offset = req.query.offset ? req.query.offset : 0;
+
+    //Handling for 
+    var searchInt = parseInt(search);
+
+    //handling for invalid integer
+    searchInt = searchInt ? searchInt : -1;
+
+    const results = await pool.query(`SET client_encoding to 'win1252'; 
+      SELECT ifsc, bank_id, branch, address, city, district, state FROM branches
+      where branch like '%${search}%'
+      or ifsc like '%${search}%'
+      or bank_id = ${searchInt}
+      or address like '%${search}%'
+      or city like '%${search}%'
+      or district like '%${search}%'
+      or state like '%${search}%'
+      order by ifsc 
+      LIMIT ${limit} 
+      OFFSET ${offset}`);
+
+    res.send(results[1].rows);
+
+  } 
+  catch (err) 
+  {
+    console.error(err.message);
+  }
+
+});
+
+app.get("/api/branches/autocomplete", async (req, res) =>
+{
+  
+  try 
+  {
+
     //Handling for empty parameters
-    if(branch !== '')
-    branch="RTGS";
+    var branch = req.query.q ? req.query.q : "RTGS";
+    var limit = req.query.limit ? req.query.limit : 3;
+    var offset = req.query.offset ? req.query.offset : 0;
 
-    if(!limit)
-    limit=3;
-
-    if(!offset)
-    offset=0;
-
-    const results = await pool.query("SET client_encoding to 'win1252';  SELECT ifsc, bank_id, branch, address, city, district, state FROM branches where branch like '" + `${branch}` +"%' order by ifsc LIMIT " + `${limit}` + " OFFSET " + `${offset}`);
+    const results = await pool.query(`SET client_encoding to 'win1252';  
+      SELECT ifsc, bank_id, branch, address, city, district, state FROM branches
+      where branch like '${branch}%'
+      order by ifsc 
+      LIMIT ${limit} 
+      OFFSET ${offset}`);
     
-    let filteredData = [];
-    filteredData.push("ifsc ,bank_id , branch , address , city , district , state");
+    // let filteredData = [];
+    // filteredData.push("ifsc ,bank_id , branch , address , city , district , state");
 
-    for(var i=0;i<results[1].rows.length;i++)
-      {
-         let eachFilteredData = [];
-         var data = results[1].rows[i];
-         eachFilteredData.push(data.ifsc);
-         eachFilteredData.push(data.bank_id);
-         eachFilteredData.push(data.branch);
-         eachFilteredData.push(data.address);
-         eachFilteredData.push(data.city);
-         eachFilteredData.push(data.district);
-         eachFilteredData.push(data.state);
+    // for(var i=0;i<results[1].rows.length;i++)
+    //   {
+    //      let eachFilteredData = [];
+    //      var data = results[1].rows[i];
+    //      eachFilteredData.push(data.ifsc);
+    //      eachFilteredData.push(data.bank_id);
+    //      eachFilteredData.push(data.branch);
+    //      eachFilteredData.push(data.address);
+    //      eachFilteredData.push(data.city);
+    //      eachFilteredData.push(data.district);
+    //      eachFilteredData.push(data.state);
          
-         filteredData.push(eachFilteredData);
-      }
+    //      filteredData.push(eachFilteredData);
+    //   }
      
-    res.send(JSON.stringify(filteredData, null, 2));
-
+    // res.send(JSON.stringify(filteredData, null, 2));
+      
+    res.send(results[1].rows);
   } 
     catch (err) 
     {
       console.error(err.message);
     }
 });
-
-app.get("/api/branches/autocomplete", async (req, res) => {
-  
-  try 
-  {
-    const branch = req.query.q;
-    const limit = req.query.limit;
-    const offset = req.query.offset;
-    
-    if(Object.keys(req.query).length !== 0)
-    console.log("29");
-
-    const results = await pool.query("SET client_encoding to 'win1252';  SELECT ifsc, bank_id, branch, address, city, district, state FROM branches where branch like '" + `${branch}` +"%' order by ifsc LIMIT " + `${limit}` + " OFFSET " + `${offset}`);
-    
-    // console.log(results[1].rows);
-
-    let filteredData = [];
-    filteredData.push("ifsc ,bank_id , branch , address , city , district , state");
-
-    for(var i=0;i<results[1].rows.length;i++)
-      {
-         let eachFilteredData = [];
-         var data = results[1].rows[i];
-         eachFilteredData.push(data.ifsc);
-         eachFilteredData.push(data.bank_id);
-         eachFilteredData.push(data.branch);
-         eachFilteredData.push(data.address);
-         eachFilteredData.push(data.city);
-         eachFilteredData.push(data.district);
-         eachFilteredData.push(data.state);
-         
-         filteredData.push(eachFilteredData);
-      }
-     
-    res.send(JSON.stringify(filteredData, null, 2));
-
-  } 
-    catch (err) 
-    {
-      console.error(err.message);
-    }
-});
-
 
 app.listen(5000, () => 
 {
