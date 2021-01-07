@@ -21,7 +21,7 @@ app.get("/api/branches/", async (req, res) => {
   
   try 
   {
-    var search = req.query.q ? req.query.q : "";
+    var search = req.query.q ? req.query.q.toUpperCase() : "";
     var limit = req.query.limit ? req.query.limit : 500;
     var offset = req.query.offset ? req.query.offset : 0;
 
@@ -60,7 +60,7 @@ app.get("/api/branches/autocomplete", async (req, res) =>
   {
 
     //Handling for empty parameters
-    var branch = req.query.q ? req.query.q : "";
+    var branch = req.query.q ? req.query.q.toUpperCase() : "";
     var limit = req.query.limit ? req.query.limit : 500;
     var offset = req.query.offset ? req.query.offset : 0;
 
